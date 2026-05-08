@@ -1,6 +1,6 @@
 /**
  * @license MIT
- * @version 1.0.0
+ * @version 1.0.1
  * Copyright (c) 2026 K2Sistemas.NET
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -539,7 +539,7 @@ function K2NumerosPaste(event, input, decimales) {
  * @param {string} dd   - Día actual (2 dígitos) como fallback.
  * @param {string} mm   - Mes actual (2 dígitos) como fallback.
  * @param {string} yyyy - Año actual (4 dígitos) como fallback.
- * @returns {{ valida: boolean, tieneHora: boolean, d: string, m: string, y: string, h: string, mi: string, ss: string }}
+ * @returns {{ valida: boolean, d: string, m: string, y: string, h: string, mi: string, ss: string }}
  */
 function K2ValidarFecha2(formatted, dd, mm, yyyy) {
     const HH = '00', MI = '00', SS = '00';
@@ -570,7 +570,6 @@ function K2ValidarFecha2(formatted, dd, mm, yyyy) {
 
     return {
         valida,
-        tieneHora: h !== '00' || mi !== '00' || ss !== '00',
         d, m, y, h, mi, ss
     };
 }
@@ -685,17 +684,19 @@ function K2FechaKeyDown(event, input, label, salto) {
     // --- Bloque: Completar la fecha al presionar Enter (longitud < 19) ---
     // Si la fecha no está completa (19 chars = "dd/mm/yyyy hh:mm:ss"),
     // rellena con los componentes validados y posiciona el cursor.
-    if (esEnter && input.value.length !== 19) {
-        if (r.tieneHora) {
-            input.value = `${r.d}/${r.m}/${r.y} ${r.h}:${r.mi}:${r.ss}`;
-        } else {
+    let len = input.value.length;
+    if (esEnter && len !== 19) {
+        event.preventDefault();
+        if (len < 11) {
             input.value = `${r.d}/${r.m}/${r.y} `;
+        } else {
+            input.value = `${r.d}/${r.m}/${r.y} ${r.h}:${r.mi}:${r.ss}`;
         }
 
-        if (r.tieneHora) {
-            input.setSelectionRange(19, 19);
-        } else {
+        if (len < 11) {
             input.setSelectionRange(11, 11);
+        } else {
+            input.setSelectionRange(19, 19);
         }
 
         return false;
@@ -706,6 +707,7 @@ function K2FechaKeyDown(event, input, label, salto) {
         if (esDigito || esBorrar || esDel) {
 
             K2GuardarEstadoFecha(input);
+            event.preventDefault();
 
             let digits    = valorConTecla.replace(/[^0-9]/g, '');
             let formatted = '';
@@ -751,6 +753,7 @@ function K2FechaKeyDown(event, input, label, salto) {
 
     // --- Bloque: Enter con fecha inválida → mostrar aviso ---
     if (esEnter && !r.valida) {
+        event.preventDefault();
         if (AV) {
             AV.innerText = 'Fecha o Hora NO VÁLIDA.';
             AV.classList.add("aviso");
@@ -761,6 +764,7 @@ function K2FechaKeyDown(event, input, label, salto) {
 
     // --- Bloque: Enter con fecha completa y válida → saltar al siguiente campo ---
     if (esEnter && input.value.length === 19 && r.valida) {
+        event.preventDefault();
         const fi = document.getElementById(salto);
         if (fi) fi.focus();
         return false;
