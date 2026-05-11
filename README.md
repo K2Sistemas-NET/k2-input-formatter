@@ -172,7 +172,7 @@ if (K2FechaHoraValida(document.getElementById('FechaAlta').value)) {
 ## Demo
 
 Puedes probar la librería en vivo en:
-[http://www.k2sistemas.net/k2-input-format](http://www.k2sistemas.net/k2-input-format)
+[http://www.k2sistemas.net/k2-input-formatter](http://www.k2sistemas.net/k2-input-formatter)
 
 ---
 

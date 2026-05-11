@@ -1,6 +1,6 @@
 /**
  * @license MIT
- * @version 1.0.1
+ * @version 1.0.3
  * Copyright (c) 2026 K2Sistemas.NET
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -134,9 +134,10 @@ function K2GuardarEstadoFecha(input) {
  * @param {KeyboardEvent} event  - Evento de teclado.
  * @param {HTMLInputElement} input - El campo de entrada.
  * @param {number} decimales - Cantidad máxima de decimales permitidos.
+ * @param {string} salto  - ID del elemento al que saltar al confirmar con Enter.
  * @returns {boolean}
  */
-function K2NumerosKeyDown(event, input, decimales) {
+function K2NumerosKeyDown(event, input, decimales, salto) {
 
     // --- Bloque: Cortar (Ctrl+X / Shift+Delete) ---
     // Permite cortar la selección y reformatea el número restante manteniendo
@@ -205,6 +206,7 @@ function K2NumerosKeyDown(event, input, decimales) {
     // --- Bloque: Enter sin decimales al inicio ---
     // Si el valor empieza por coma (ej: ",5") al presionar Enter se antepone "0".
     if (esEnter) {
+        event.preventDefault();
         if (valorActual.startsWith(',')) {
             const valorConCero = '0' + valorActual;
             const partes = valorConCero.replace(/\./g, '').split(',');
@@ -212,7 +214,11 @@ function K2NumerosKeyDown(event, input, decimales) {
             input.value = partes.join(',');
             input.setSelectionRange(posFin, posFin);
         }
-        return;
+        if (salto) {
+            const fi = document.getElementById(salto);
+            if (fi) fi.focus();
+        }
+        return false;
     }
 
     // --- Bloque: Deshacer (Ctrl+Z) ---
