@@ -1,6 +1,6 @@
 /**
  * @license MIT
- * @version 1.0.3
+ * @version 1.0.6
  * Copyright (c) 2026 K2Sistemas.NET
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -53,6 +53,8 @@
 
 const K2HistoricoNumeros = new WeakMap();
 const K2HistoricoFecha = new WeakMap();
+const K2HistoricoTexto = new WeakMap();
+const K2HistoricoEmail = new WeakMap();
 
 /**
  * Obtiene (o inicializa) el historial de deshacer/rehacer para un campo numérico.
@@ -194,13 +196,13 @@ function K2NumerosKeyDown(event, input, decimales, salto) {
 
     // --- Bloque: Clasificación de la tecla presionada ---
     const esDigito = /^[0-9]$/.test(event.key);
-    const esComa  = event.key === ',' || event.key === '.'; // Tanto ',' como '.' se tratan como separador decimal
+    const esComa = event.key === ',' || event.key === '.'; // Tanto ',' como '.' se tratan como separador decimal
     const esBorrar = event.key === 'Backspace';
-    const esDel    = event.key === 'Delete';
-    const esEnter  = event.key === 'Enter';
+    const esDel = event.key === 'Delete';
+    const esEnter = event.key === 'Enter';
 
-    const pos        = input.selectionStart;
-    const posFin     = input.selectionEnd;
+    const pos = input.selectionStart;
+    const posFin = input.selectionEnd;
     const valorActual = input.value;
 
     // --- Bloque: Enter sin decimales al inicio ---
@@ -224,7 +226,7 @@ function K2NumerosKeyDown(event, input, decimales, salto) {
     // --- Bloque: Deshacer (Ctrl+Z) ---
     const esDeshacer = (event.ctrlKey || event.metaKey) && !event.shiftKey && (event.key === 'z' || event.key === 'Z');
     // --- Bloque: Rehacer (Ctrl+Y o Ctrl+Shift+Z) ---
-    const esRehacer  = ((event.ctrlKey || event.metaKey) && (event.key === 'y' || event.key === 'Y')) ||
+    const esRehacer = ((event.ctrlKey || event.metaKey) && (event.key === 'y' || event.key === 'Y')) ||
         ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'z' || event.key === 'Z'));
 
     if (esDeshacer) {
@@ -274,7 +276,7 @@ function K2NumerosKeyDown(event, input, decimales, salto) {
 
     // --- Bloque: Verificación de límite de dígitos ---
     // No permite agregar más dígitos si ya se alcanzó el máximo.
-    const digitosActuales    = input.value.replace(/[.,]/g, '').length;
+    const digitosActuales = input.value.replace(/[.,]/g, '').length;
     const digitosSeleccionados = input.value.slice(pos, posFin).replace(/[.,]/g, '').length;
     if ((esDigito || esComa) && (digitosActuales - digitosSeleccionados) >= max) {
         return false;
@@ -381,8 +383,8 @@ function K2NumerosPaste(event, input, decimales) {
 
     K2GuardarEstadoNumeros(input);
 
-    const pos      = input.selectionStart;
-    const posFin   = input.selectionEnd;
+    const pos = input.selectionStart;
+    const posFin = input.selectionEnd;
     const inputLength = input.value.length;
 
     let textoPegado = (event.clipboardData || window.clipboardData).getData('text');
@@ -392,11 +394,11 @@ function K2NumerosPaste(event, input, decimales) {
     if (max <= 0) max = 8;
 
     // --- Bloque: Cálculo de posiciones reales (sin contar puntos de miles) ---
-    const valorSinPuntos       = input.value.replace(/\./g, '');
-    const puntosAntesCursor    = (input.value.substring(0, pos).match(/\./g) || []).length;
-    const puntosAntesPosFin    = (input.value.substring(0, posFin).match(/\./g) || []).length;
-    const posReal              = pos - puntosAntesCursor;
-    const posFinReal           = posFin - puntosAntesPosFin;
+    const valorSinPuntos = input.value.replace(/\./g, '');
+    const puntosAntesCursor = (input.value.substring(0, pos).match(/\./g) || []).length;
+    const puntosAntesPosFin = (input.value.substring(0, posFin).match(/\./g) || []).length;
+    const posReal = pos - puntosAntesCursor;
+    const posFinReal = posFin - puntosAntesPosFin;
 
     // --- Bloque: Validación de coma duplicada ---
     // Si tanto el campo como el texto pegado tienen coma, solo se permite
@@ -426,11 +428,11 @@ function K2NumerosPaste(event, input, decimales) {
     const valorCombinado = valorSinPuntos.slice(0, posReal) + textoPegado + valorSinPuntos.slice(posFinReal);
 
     // --- Bloque: Detección de separadores en el texto pegado ---
-    const posComa0  = input.value.indexOf(',');
-    const posPunto  = valorCombinado.indexOf('.');
-    const posComa   = valorCombinado.indexOf(',');
+    const posComa0 = input.value.indexOf(',');
+    const posPunto = valorCombinado.indexOf('.');
+    const posComa = valorCombinado.indexOf(',');
     const tienePunto = posPunto !== -1;
-    const tieneComa  = posComa  !== -1;
+    const tieneComa = posComa !== -1;
 
     let anadePos = 0;
 
@@ -474,9 +476,9 @@ function K2NumerosPaste(event, input, decimales) {
     const soloDigitos = valorCrudo.replace(/[.,]/g, '');
     const idxComa = valorCrudo.indexOf(',');
     if (soloDigitos.length > max && idxComa !== -1) {
-        const entero  = valorCrudo.substring(0, idxComa);
-        let decimal   = valorCrudo.substring(idxComa + 1);
-        const exceso  = soloDigitos.length - max;
+        const entero = valorCrudo.substring(0, idxComa);
+        let decimal = valorCrudo.substring(idxComa + 1);
+        const exceso = soloDigitos.length - max;
         decimal = decimal.substring(0, Math.max(0, decimal.length - exceso));
         valorCrudo = decimal.length > 0 ? entero + ',' + decimal : entero;
     }
@@ -487,7 +489,7 @@ function K2NumerosPaste(event, input, decimales) {
     if (soloDigitos2.length > max) {
         const idxComa2 = valorCrudo.indexOf(',');
         if (idxComa2 !== -1) {
-            const decimal         = valorCrudo.substring(idxComa2 + 1);
+            const decimal = valorCrudo.substring(idxComa2 + 1);
             const enteroRecortado = valorCrudo.substring(0, idxComa2).substring(soloDigitos2.length - max - decimal.length);
             valorCrudo = enteroRecortado + ',' + decimal;
         } else {
@@ -507,8 +509,8 @@ function K2NumerosPaste(event, input, decimales) {
         ? valorFinal.split(',')[1]?.length ?? 0
         : 0;
 
-    const decimalesPerdidos      = decimalesDespues - decimalesAntes;
-    const cursorEstaEnDecimales  = (posFin - 1) >= posComa0;
+    const decimalesPerdidos = decimalesDespues - decimalesAntes;
+    const cursorEstaEnDecimales = (posFin - 1) >= posComa0;
     if (cursorEstaEnDecimales && decimalesAntes) {
         anadePos += textoPegado.replace(/[.,]/g, '').length;
         anadePos -= decimalesDespues - decimalesAntes;
@@ -521,7 +523,7 @@ function K2NumerosPaste(event, input, decimales) {
         }
     }
 
-    const pos1    = inputLength - posFin;
+    const pos1 = inputLength - posFin;
     const posFinal = valorFinal.length - pos1 + anadePos;
 
     input.value = valorFinal;
@@ -551,10 +553,10 @@ function K2ValidarFecha2(formatted, dd, mm, yyyy) {
     const HH = '00', MI = '00', SS = '00';
     const partes = formatted.trim().split(/[\/:\s]+/);
 
-    const d  = (partes[0] || dd).padStart(2, '0').substring(0, 2);
-    const m  = (partes[1] || mm).padStart(2, '0').substring(0, 2);
-    let   y  = partes[2] || yyyy;
-    const h  = (partes[3] || HH).padStart(2, '0').substring(0, 2);
+    const d = (partes[0] || dd).padStart(2, '0').substring(0, 2);
+    const m = (partes[1] || mm).padStart(2, '0').substring(0, 2);
+    let y = partes[2] || yyyy;
+    const h = (partes[3] || HH).padStart(2, '0').substring(0, 2);
     const mi = (partes[4] || MI).padStart(2, '0').substring(0, 2);
     const ss = (partes[5] || SS).padStart(2, '0').substring(0, 2);
 
@@ -567,11 +569,11 @@ function K2ValidarFecha2(formatted, dd, mm, yyyy) {
     const fechaV = new Date(parseInt(y), parseInt(m) - 1, parseInt(d), parseInt(h), parseInt(mi), parseInt(ss));
     const valida = (
         fechaV.getFullYear() === parseInt(y) &&
-        fechaV.getMonth()    === parseInt(m) - 1 &&
-        fechaV.getDate()     === parseInt(d) &&
-        fechaV.getHours()    === parseInt(h) &&
-        fechaV.getMinutes()  === parseInt(mi) &&
-        fechaV.getSeconds()  === parseInt(ss)
+        fechaV.getMonth() === parseInt(m) - 1 &&
+        fechaV.getDate() === parseInt(d) &&
+        fechaV.getHours() === parseInt(h) &&
+        fechaV.getMinutes() === parseInt(mi) &&
+        fechaV.getSeconds() === parseInt(ss)
     );
 
     return {
@@ -600,7 +602,7 @@ function K2FechaKeyDown(event, input, label, salto) {
     // --- Bloque: Deshacer (Ctrl+Z) ---
     const esDeshacer = (event.ctrlKey || event.metaKey) && !event.shiftKey && (event.key === 'z' || event.key === 'Z');
     // --- Bloque: Rehacer (Ctrl+Y o Ctrl+Shift+Z) ---
-    const esRehacer  = ((event.ctrlKey || event.metaKey) && (event.key === 'y' || event.key === 'Y')) ||
+    const esRehacer = ((event.ctrlKey || event.metaKey) && (event.key === 'y' || event.key === 'Y')) ||
         ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'z' || event.key === 'Z'));
 
     if (esDeshacer) {
@@ -657,17 +659,17 @@ function K2FechaKeyDown(event, input, label, salto) {
     }
 
     // --- Bloque: Obtener la fecha actual como valores de fallback ---
-    const hoy  = new Date();
-    const dd   = String(hoy.getDate()).padStart(2, '0');
-    const mm   = String(hoy.getMonth() + 1).padStart(2, '0');
+    const hoy = new Date();
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
     const yyyy = String(hoy.getFullYear());
 
     // --- Bloque: Clasificación de la tecla presionada ---
     const esDigito = /^[0-9]$/.test(event.key);
     const esBorrar = event.key === 'Backspace';
-    const esDel    = event.key === 'Delete';
-    const pos      = input.selectionStart;
-    const posFin   = input.selectionEnd;
+    const esDel = event.key === 'Delete';
+    const pos = input.selectionStart;
+    const posFin = input.selectionEnd;
 
     // --- Bloque: Simulación del nuevo valor tras la tecla ---
     // Construye cómo quedaría el valor si se aplica la tecla actual.
@@ -715,15 +717,15 @@ function K2FechaKeyDown(event, input, label, salto) {
             K2GuardarEstadoFecha(input);
             event.preventDefault();
 
-            let digits    = valorConTecla.replace(/[^0-9]/g, '');
+            let digits = valorConTecla.replace(/[^0-9]/g, '');
             let formatted = '';
-            const esSeperador  = /[\/:\s]/.test(input.value[pos - 1]); // Hay separador antes del cursor
+            const esSeperador = /[\/:\s]/.test(input.value[pos - 1]); // Hay separador antes del cursor
             const esSeperadorP = /[\/:\s]/.test(input.value[pos]);     // Hay separador en el cursor
             const cursorAlFinal = input.selectionStart === input.value.length;
-            if (esDigito)  { pos2 += 1; }
-            if (esBorrar)  { pos2 -= 1; }
-            if (esBorrar && esSeperador)  { pos2 += 1; } // No retroceder sobre separador
-            if (esDigito  && esSeperadorP) { pos2 += 1; } // Saltar separador al avanzar
+            if (esDigito) { pos2 += 1; }
+            if (esBorrar) { pos2 -= 1; }
+            if (esBorrar && esSeperador) { pos2 += 1; } // No retroceder sobre separador
+            if (esDigito && esSeperadorP) { pos2 += 1; } // Saltar separador al avanzar
 
             // Reconstituye el formato dd/mm/yyyy hh:mm:ss insertando separadores.
             for (let i = 0; i < digits.length; i++) {
@@ -800,9 +802,9 @@ function K2FechaPaste(event, input, label) {
     event.preventDefault();
 
     // --- Bloque: Obtener la fecha actual como valores de fallback ---
-    const hoy  = new Date();
-    const dd   = String(hoy.getDate()).padStart(2, '0');
-    const mm   = String(hoy.getMonth() + 1).padStart(2, '0');
+    const hoy = new Date();
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
     const yyyy = String(hoy.getFullYear());
 
     // Limpia el aviso de error si existe.
@@ -812,8 +814,8 @@ function K2FechaPaste(event, input, label) {
         AV.classList.remove("aviso");
     }
 
-    const pos         = input.selectionStart;
-    const posFin      = input.selectionEnd;
+    const pos = input.selectionStart;
+    const posFin = input.selectionEnd;
     const textoPegado = (event.clipboardData || window.clipboardData).getData('text');
 
     // --- Bloque: Combinación del valor existente con el texto pegado ---
@@ -826,7 +828,7 @@ function K2FechaPaste(event, input, label) {
     let formatted = '';
     for (let i = 0; i < digits.length; i++) {
         if (i === 2 || i === 4) formatted += '/';
-        if (i === 8)  formatted += ' ';
+        if (i === 8) formatted += ' ';
         if (i === 10 || i === 12) formatted += ':';
         if (i >= 14) break;
         formatted += digits[i];
@@ -859,12 +861,12 @@ function K2FechaHoraValida(valor) {
     const match = valor.match(regex);
     if (!match) return false;
 
-    const dia  = parseInt(match[1]);
-    const mes  = parseInt(match[2]) - 1; // Mes 0-indexado para el constructor Date
+    const dia = parseInt(match[1]);
+    const mes = parseInt(match[2]) - 1; // Mes 0-indexado para el constructor Date
     const anio = parseInt(match[3]);
     const hora = parseInt(match[4]);
-    const min  = parseInt(match[5]);
-    const seg  = parseInt(match[6]);
+    const min = parseInt(match[5]);
+    const seg = parseInt(match[6]);
 
     const fecha = new Date(anio, mes, dia, hora, min, seg);
 
@@ -872,10 +874,527 @@ function K2FechaHoraValida(valor) {
     // (ej: día 32 → día 1 del mes siguiente).
     return (
         fecha.getFullYear() === anio &&
-        fecha.getMonth()    === mes  &&
-        fecha.getDate()     === dia  &&
-        fecha.getHours()    === hora &&
-        fecha.getMinutes()  === min  &&
-        fecha.getSeconds()  === seg
+        fecha.getMonth() === mes &&
+        fecha.getDate() === dia &&
+        fecha.getHours() === hora &&
+        fecha.getMinutes() === min &&
+        fecha.getSeconds() === seg
     );
+}
+
+// =============================================================================
+// SECCIÓN 9: HISTORIAL DE DESHACER/REHACER PARA CAMPOS DE TEXTO ASCII
+// Mismo patrón que las secciones anteriores, para campos de texto ASCII.
+// =============================================================================
+
+/**
+ * Obtiene (o inicializa) el historial de deshacer/rehacer para un campo de texto ASCII.
+ * @param {HTMLInputElement} input - El campo de entrada.
+ * @returns {{ deshacer: Array, rehacer: Array }}
+ */
+function K2GetHistoricoTexto(input) {
+    if (!K2HistoricoTexto.has(input)) {
+        K2HistoricoTexto.set(input, {
+            deshacer: [],
+            rehacer: []
+        });
+    }
+    return K2HistoricoTexto.get(input);
+}
+
+/**
+ * Guarda el estado actual del campo de texto ASCII en la pila de deshacer.
+ * Limita el historial a 10 entradas y limpia la pila de rehacer.
+ * @param {HTMLInputElement} input - El campo de entrada.
+ */
+function K2GuardarEstadoTexto(input) {
+    const historial = K2GetHistoricoTexto(input);
+    historial.deshacer.push({
+        valor: input.value,
+        pos: input.selectionStart,
+        posFin: input.selectionEnd
+    });
+    if (historial.deshacer.length > 10) historial.deshacer.shift();
+    historial.rehacer = [];
+}
+
+// =============================================================================
+// SECCIÓN 10: MANEJO DE TECLADO PARA CAMPOS DE TEXTO ASCII (K2TextKeyDown)
+// Permite únicamente caracteres ASCII imprimibles (códigos >32) además de
+// las teclas de control habituales (navegación, borrado, Ctrl/Meta).
+// Gestiona corte (Ctrl+X / Shift+Delete), pegado (Shift+Insert),
+// deshacer (Ctrl+Z) y rehacer (Ctrl+Y / Ctrl+Shift+Z).
+// =============================================================================
+
+/**
+ * Manejador del evento keydown para campos de texto ASCII imprimible.
+ * Rango permitido: códigos ASCII >32 (espacio).
+ * @param {KeyboardEvent}   event  - Evento de teclado.
+ * @param {HTMLInputElement} input - El campo de entrada.
+ * @param {string} salto           - ID del elemento al que saltar al confirmar con Enter.
+ * @returns {boolean}
+ */
+function K2TextKeyDown(event, input, salto) {
+
+    // --- Bloque: Cortar (Ctrl+X / Shift+Delete) ---
+    if (((event.ctrlKey || event.metaKey) && (event.key === 'x' || event.key === 'X')) ||
+        (event.shiftKey && event.key === 'Delete')) {
+        K2GuardarEstadoTexto(input);
+        return true; // Permite el comportamiento nativo de cortar
+    }
+
+    // --- Bloque: Pegar con Shift+Insert ---
+    if (event.shiftKey && event.key === 'Insert') {
+        navigator.clipboard.readText().then(function (textoPegado) {
+            K2TextPaste({
+                preventDefault: () => { },
+                clipboardData: { getData: () => textoPegado }
+            }, input);
+        });
+        event.preventDefault();
+        return true;
+    }
+
+    // --- Bloque: Deshacer (Ctrl+Z) ---
+    const esDeshacer = (event.ctrlKey || event.metaKey) && !event.shiftKey &&
+        (event.key === 'z' || event.key === 'Z');
+    // --- Bloque: Rehacer (Ctrl+Y o Ctrl+Shift+Z) ---
+    const esRehacer = ((event.ctrlKey || event.metaKey) && (event.key === 'y' || event.key === 'Y')) ||
+        ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'z' || event.key === 'Z'));
+
+    if (esDeshacer) {
+        const historial = K2GetHistoricoTexto(input);
+        if (historial.deshacer.length > 0) {
+            historial.rehacer.push({ valor: input.value, pos: input.selectionStart, posFin: input.selectionEnd });
+            const estado = historial.deshacer.pop();
+            input.value = estado.valor;
+            input.setSelectionRange(estado.pos, estado.posFin);
+        }
+        event.preventDefault();
+        return false;
+    }
+
+    if (esRehacer) {
+        const historial = K2GetHistoricoTexto(input);
+        if (historial.rehacer.length > 0) {
+            historial.deshacer.push({ valor: input.value, pos: input.selectionStart, posFin: input.selectionEnd });
+            const estado = historial.rehacer.pop();
+            input.value = estado.valor;
+            input.setSelectionRange(estado.pos, estado.posFin);
+        }
+        event.preventDefault();
+        return false;
+    }
+
+    // --- Bloque: Permitir combinaciones Ctrl/Meta sin más procesamiento ---
+    if (event.ctrlKey || event.metaKey) return true;
+
+    // --- Bloque: Teclas de control siempre permitidas ---
+    const esTeclaControl =
+        event.key === 'Backspace' || event.key === 'Delete' ||
+        event.key === 'Tab' || event.key === 'Enter' ||
+        event.key === 'ArrowLeft' || event.key === 'ArrowRight' ||
+        event.key === 'ArrowUp' || event.key === 'ArrowDown' ||
+        event.key === 'Home' || event.key === 'End';
+
+    if (esTeclaControl) {
+        // --- Bloque: Enter → saltar al campo siguiente ---
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            if (salto) {
+                const fi = document.getElementById(salto);
+                if (fi) fi.focus();
+            }
+            return false;
+        }
+        // Guarda estado antes de borrar
+        if (event.key === 'Backspace' || event.key === 'Delete') {
+            K2GuardarEstadoTexto(input);
+        }
+        return true;
+    }
+
+    // --- Bloque: Filtro de caracteres ASCII imprimibles (>32) ---
+    // event.key para un carácter individual tiene length === 1.
+    if (event.key.length === 1) {
+        const codigo = event.key.charCodeAt(0);
+        if (codigo < 32) {
+            event.preventDefault();
+            return false;
+        }
+        // Guarda estado antes de insertar el carácter
+        K2GuardarEstadoTexto(input);
+        return true; // Permite el comportamiento nativo de escritura
+    }
+
+    // Cualquier otra tecla especial no contemplada: se bloquea.
+    event.preventDefault();
+    return false;
+}
+
+// =============================================================================
+// SECCIÓN 11: MANEJO DE PEGADO PARA CAMPOS DE TEXTO ASCII (K2TextPaste)
+// Filtra el texto pegado dejando únicamente los caracteres ASCII imprimibles
+// (códigos >32) y lo inserta respetando la selección actual y maxLength.
+// =============================================================================
+
+/**
+ * Manejador del evento paste para campos de texto ASCII imprimible.
+ * @param {ClipboardEvent}  event  - Evento de pegado.
+ * @param {HTMLInputElement} input - El campo de entrada.
+ */
+function K2TextPaste(event, input) {
+
+    if (input.disabled || input.readOnly) return false;
+
+    event.preventDefault();
+
+    K2GuardarEstadoTexto(input);
+
+    const pos = input.selectionStart;
+    const posFin = input.selectionEnd;
+
+    let textoPegado = (event.clipboardData || window.clipboardData).getData('text');
+
+    // --- Bloque: Filtrar caracteres no ASCII imprimibles ---
+    // Se conservan únicamente los caracteres con código ASCII mayores de 32.
+    textoPegado = textoPegado.split('').filter(function (c) {
+        const code = c.charCodeAt(0);
+        return code >= 32;
+    }).join('');
+
+    // --- Bloque: Construcción del nuevo valor respetando maxLength ---
+    const valorActual = input.value;
+    const valorNuevo = valorActual.slice(0, pos) + textoPegado + valorActual.slice(posFin);
+
+    const max = input.maxLength > 0 ? input.maxLength : Infinity;
+    input.value = valorNuevo.substring(0, max);
+
+    // --- Bloque: Posicionamiento del cursor tras el texto pegado ---
+    const posFinal = Math.min(pos + textoPegado.length, input.value.length);
+    input.setSelectionRange(posFinal, posFinal);
+}
+
+// =============================================================================
+// SECCIÓN 12: VALIDACIÓN DE DIRECCIÓN DE CORREO ELECTRÓNICO (K2EmailValidate)
+// Comprueba que la cadena dada sea una dirección de correo válida verificando:
+//   - Presencia de exactamente una "@" y al menos un "."
+//   - Ausencia de "@." (punto inmediatamente tras la arroba)
+//   - Que el nombre no empiece por "."
+//   - Que no haya dos puntos consecutivos ".."
+//   - Que la extensión final tenga entre 2 y 4 letras
+//   - Caracteres válidos en nombre, dominio y extensión
+// =============================================================================
+
+/**
+ * Verifica si una cadena es una dirección de correo electrónico válida.
+ * Traducción fiel de la función VB.NET VerificaEmail.
+ *
+ * Caracteres válidos por sección:
+ *   Nombre   : 0-9  A-Z  a-z  % (37)  + (43)  - (45)  . (46)  _ (95)
+ *   Dominio  : 0-9  A-Z  a-z  . (46)  - (45)
+ *   Extensión: A-Z  a-z  (solo letras)
+ *
+ * @param {string} T - La cadena a validar.
+ * @returns {boolean} true si la dirección es válida, false en caso contrario.
+ */
+function K2EmailValidate(T) {
+
+    if (typeof T !== 'string') return false;
+
+    const L = T.length;
+    let V = true;
+
+    // Posición base-1 de la primera "@" y del primer "."
+    const L1 = T.indexOf('@') + 1;   // 0 = ausente
+    const L2primera = T.indexOf('.') + 1;
+
+    // Debe haber una "@" y un "."
+    if (L1 === 0 || L2primera === 0) return false;
+
+    // No puede empezar por "@" o "."
+    if (L1 === 1 || L2primera === 1) return false;
+
+    // No puede haber más de una "@"
+    if (T.indexOf('@', L1) !== -1) return false;
+
+    // Antes de la "@" no puede haber un "." (nombre no termina en punto)
+    if (T.includes('.@')) return false;
+
+    // Después de la "@" no puede haber un "." inmediatamente
+    if (T.includes('@.')) return false;
+
+    // Después de la "@" debe existir un "."
+    if (T.indexOf('.', L1 - 1) === -1) return false;
+
+    // No puede haber dos puntos consecutivos
+    if (T.includes('..')) return false;
+
+    // Último "." → determina la extensión
+    let L2 = T.lastIndexOf('.') + 1; // base-1 del último punto
+
+    // La extensión debe tener entre 2 y 63 caracteres
+    const LL = L - L2;
+    if (LL < 2 || LL > 63) return false;
+
+    // Caracteres válidos en el NOMBRE (base-0: índice 0 .. L1-2)
+    for (let i = 0; i < L1 - 1; i++) {
+        const C = T.charCodeAt(i);
+        //     0-9               A-Z               a-z               %      +      -      .      _      Unicode
+        if (!((C >= 48 && C <= 57) || (C >= 65 && C <= 90) || (C >= 97 && C <= 122) ||
+            C === 37 || C === 43 || C === 45 || C === 46 || C === 95 || C >= 128)) {
+            V = false;
+        }
+    }
+
+    // Caracteres válidos en el DOMINIO (base-0: índice L1 .. L2-2)
+    for (let i = L1; i <= L2 - 2; i++) {
+        const C = T.charCodeAt(i);
+        //     0-9               A-Z               a-z               .      -      Unicode
+        if (!((C >= 48 && C <= 57) || (C >= 65 && C <= 90) || (C >= 97 && C <= 122) ||
+            C === 46 || C === 45 || C >= 128)) {
+            V = false;
+        }
+    }
+
+    // Caracteres válidos en la EXTENSIÓN (base-0: índice L2 .. L-1)
+    for (let i = L2; i < L; i++) {
+        const C = T.charCodeAt(i);
+        //     A-Z               a-z               Unicode
+        if (!((C >= 65 && C <= 90) || (C >= 97 && C <= 122) || C >= 128)) {
+            V = false;
+        }
+    }
+
+    return V;
+}
+
+// =============================================================================
+// SECCIÓN 13: MANEJO DE TECLADO PARA CAMPOS DE EMAIL (K2EmailKeyDown)
+// Permite los caracteres válidos para una dirección de correo electrónico
+// y valida visualmente el contenido del campo en tiempo real.
+// Gestiona corte, pegado (Shift+Insert), deshacer y rehacer.
+// =============================================================================
+
+/**
+ * Obtiene (o inicializa) el historial de deshacer/rehacer para un campo de email.
+ * @param {HTMLInputElement} input - El campo de entrada.
+ * @returns {{ deshacer: Array, rehacer: Array }}
+ */
+function K2GetHistoricoEmail(input) {
+    if (!K2HistoricoEmail.has(input)) {
+        K2HistoricoEmail.set(input, {
+            deshacer: [],
+            rehacer: []
+        });
+    }
+    return K2HistoricoEmail.get(input);
+}
+
+/**
+ * Guarda el estado actual del campo de email en la pila de deshacer.
+ * @param {HTMLInputElement} input - El campo de entrada.
+ */
+function K2GuardarEstadoEmail(input) {
+    const historial = K2GetHistoricoEmail(input);
+    historial.deshacer.push({
+        valor: input.value,
+        pos: input.selectionStart,
+        posFin: input.selectionEnd
+    });
+    if (historial.deshacer.length > 10) historial.deshacer.shift();
+    historial.rehacer = [];
+}
+
+/**
+ * Actualiza el color del borde del campo según si el valor es un email válido.
+ * El borde se limpia cuando el campo está vacío.
+ * @param {HTMLInputElement} input - El campo de entrada.
+ */
+function K2EmailActualizarBorde(input) {
+    if (input.value === '') {
+        input.style.borderColor = '';
+    } else {
+        input.style.borderColor = K2EmailValidate(input.value) ? '' : 'red';
+    }
+}
+
+/**
+ * Manejador del evento keydown para campos de dirección de correo electrónico.
+ * Permite únicamente los caracteres ASCII válidos en una dirección de email
+ * (letras, dígitos y los símbolos: % + - . _ @ y teclas de control).
+ * Valida el contenido visualmente (borde rojo) en tiempo real.
+ *
+ * @param {KeyboardEvent}   event  - Evento de teclado.
+ * @param {HTMLInputElement} input - El campo de entrada.
+ * @param {string} salto           - ID del elemento al que saltar al confirmar con Enter.
+ * @returns {boolean}
+ */
+function K2EmailKeyDown(event, input, salto) {
+
+    // --- Bloque: Cortar (Ctrl+X / Shift+Delete) ---
+    if (((event.ctrlKey || event.metaKey) && (event.key === 'x' || event.key === 'X')) ||
+        (event.shiftKey && event.key === 'Delete')) {
+        K2GuardarEstadoEmail(input);
+        setTimeout(function () { K2EmailActualizarBorde(input); }, 0);
+        return true; // Permite el comportamiento nativo de cortar
+    }
+
+    // --- Bloque: Pegar con Shift+Insert ---
+    if (event.shiftKey && event.key === 'Insert') {
+        navigator.clipboard.readText().then(function (textoPegado) {
+            K2EmailPaste({
+                preventDefault: () => { },
+                clipboardData: { getData: () => textoPegado }
+            }, input);
+        });
+        event.preventDefault();
+        return true;
+    }
+
+    // --- Bloque: Deshacer (Ctrl+Z) ---
+    const esDeshacer = (event.ctrlKey || event.metaKey) && !event.shiftKey &&
+        (event.key === 'z' || event.key === 'Z');
+    // --- Bloque: Rehacer (Ctrl+Y o Ctrl+Shift+Z) ---
+    const esRehacer = ((event.ctrlKey || event.metaKey) && (event.key === 'y' || event.key === 'Y')) ||
+        ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'z' || event.key === 'Z'));
+
+    if (esDeshacer) {
+        const historial = K2GetHistoricoEmail(input);
+        if (historial.deshacer.length > 0) {
+            historial.rehacer.push({ valor: input.value, pos: input.selectionStart, posFin: input.selectionEnd });
+            const estado = historial.deshacer.pop();
+            input.value = estado.valor;
+            input.setSelectionRange(estado.pos, estado.posFin);
+            K2EmailActualizarBorde(input);
+        }
+        event.preventDefault();
+        return false;
+    }
+
+    if (esRehacer) {
+        const historial = K2GetHistoricoEmail(input);
+        if (historial.rehacer.length > 0) {
+            historial.deshacer.push({ valor: input.value, pos: input.selectionStart, posFin: input.selectionEnd });
+            const estado = historial.rehacer.pop();
+            input.value = estado.valor;
+            input.setSelectionRange(estado.pos, estado.posFin);
+            K2EmailActualizarBorde(input);
+        }
+        event.preventDefault();
+        return false;
+    }
+
+    // --- Bloque: Permitir combinaciones Ctrl/Meta sin más procesamiento ---
+    if (event.ctrlKey || event.metaKey) return true;
+
+    // --- Bloque: Teclas de control siempre permitidas ---
+    const esTeclaControl =
+        event.key === 'Backspace' || event.key === 'Delete' ||
+        event.key === 'Tab' || event.key === 'Enter' ||
+        event.key === 'ArrowLeft' || event.key === 'ArrowRight' ||
+        event.key === 'ArrowUp' || event.key === 'ArrowDown' ||
+        event.key === 'Home' || event.key === 'End';
+
+    if (esTeclaControl) {
+        // --- Bloque: Enter → saltar al campo siguiente ---
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            if (salto) {
+                const fi = document.getElementById(salto);
+                if (fi) fi.focus();
+            }
+            return false;
+        }
+        // Guarda estado antes de borrar y revalida después
+        if (event.key === 'Backspace' || event.key === 'Delete') {
+            K2GuardarEstadoEmail(input);
+            setTimeout(function () { K2EmailActualizarBorde(input); }, 0);
+        }
+        return true;
+    }
+
+    // --- Bloque: Filtro de caracteres válidos para email ---
+    // Se permiten únicamente: letras (A-Z a-z), dígitos (0-9) y los
+    // símbolos usados en direcciones de correo: % + - . _ @
+    if (event.key.length === 1) {
+        const C = event.key.charCodeAt(0);
+        const esValido =
+            (C >= 48 && C <= 57) ||   // 0-9
+            (C >= 65 && C <= 90) ||   // A-Z
+            (C >= 97 && C <= 122) ||   // a-z
+            C === 37 ||               // %
+            C === 43 ||               // +
+            C === 45 ||               // -
+            C === 46 ||               // .
+            C === 64 ||               // @
+            C === 95;                  // _
+
+        if (!esValido) {
+            event.preventDefault();
+            return false;
+        }
+
+        // Guarda estado antes de insertar y revalida después
+        K2GuardarEstadoEmail(input);
+        setTimeout(function () { K2EmailActualizarBorde(input); }, 0);
+        return true;
+    }
+
+    // Cualquier otra tecla especial no contemplada: se bloquea.
+    event.preventDefault();
+    return false;
+}
+
+// =============================================================================
+// SECCIÓN 14: MANEJO DE PEGADO PARA CAMPOS DE EMAIL (K2EmailPaste)
+// Filtra el texto pegado conservando únicamente los caracteres válidos para
+// una dirección de correo y valida el resultado visualmente.
+// =============================================================================
+
+/**
+ * Manejador del evento paste para campos de dirección de correo electrónico.
+ * Conserva únicamente los caracteres válidos en una dirección de email
+ * (letras, dígitos y los símbolos: % + - . _ @) y valida el resultado.
+ *
+ * @param {ClipboardEvent}  event  - Evento de pegado.
+ * @param {HTMLInputElement} input - El campo de entrada.
+ */
+function K2EmailPaste(event, input) {
+
+    if (input.disabled || input.readOnly) return false;
+
+    event.preventDefault();
+
+    K2GuardarEstadoEmail(input);
+
+    const pos = input.selectionStart;
+    const posFin = input.selectionEnd;
+
+    let textoPegado = (event.clipboardData || window.clipboardData).getData('text');
+
+    // --- Bloque: Filtrar caracteres no válidos para email ---
+    // Se conservan: letras, dígitos y los símbolos % + - . _ @
+    textoPegado = textoPegado.split('').filter(function (c) {
+        const C = c.charCodeAt(0);
+        return (C >= 48 && C <= 57) ||
+            (C >= 65 && C <= 90) ||
+            (C >= 97 && C <= 122) ||
+            C === 37 || C === 43 || C === 45 ||
+            C === 46 || C === 64 || C === 95;
+    }).join('');
+
+    // --- Bloque: Construcción del nuevo valor respetando maxLength ---
+    const valorActual = input.value;
+    const valorNuevo = valorActual.slice(0, pos) + textoPegado + valorActual.slice(posFin);
+
+    const max = input.maxLength > 0 ? input.maxLength : Infinity;
+    input.value = valorNuevo.substring(0, max);
+
+    // --- Bloque: Posicionamiento del cursor tras el texto pegado ---
+    const posFinal = Math.min(pos + textoPegado.length, input.value.length);
+    input.setSelectionRange(posFinal, posFinal);
+
+    // --- Bloque: Validación visual del resultado ---
+    K2EmailActualizarBorde(input);
 }
